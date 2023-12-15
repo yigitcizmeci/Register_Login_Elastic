@@ -1,15 +1,19 @@
-﻿using System.Collections.Immutable;
+﻿using Register_Login_Elasticsearch.DTOs;
+using Register_Login_Elasticsearch.Models;
 
 namespace Register_Login_Elasticsearch.Repositories.Contracts
 {
     public interface IUserRepository<T>
     {
-        Task<ImmutableList<T>> GetAllAsync();
+        Task<List<T>> GetAllAsync();
         Task<T> GetByIdAsync(int id);
+        Task<T> GetByIdAsyncElastic(string id);
         Task<T> CreateAsync(T Entity);
-        Task<T> LoginAsync(string eMail, string userName, string password);
-        Task<T> UpdateAsync(T Entity);
-        Task<T> DeleteAsync(int id);
+        Task<T?> LoginAsync(UserLoginDto userLoginDto);
+        Task<bool> UpdateAsync(UsersUpdateDto usersUpdateDto);
+        Task<bool> DeleteAsync(string id);
+        Task<bool> DeleteAllAsync();
+        Task<bool> DeleteDatabaseAsync();
 
     }
 }

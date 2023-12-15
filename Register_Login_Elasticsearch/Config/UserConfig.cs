@@ -9,7 +9,7 @@ namespace Register_Login_Elasticsearch.Config
         public void Configure(EntityTypeBuilder<Users> builder)
         {
             builder.HasData(
-                new Users { Id = 1, Name = "", Surname = "", Email = "", UserName = "", Password = "" }
+                new Users { DatabaseId = 1,ElasticId = "a", Name = "n", Surname = "o", Email = "n", UserName = "i", Password = "m" }
                 );
         }
     }

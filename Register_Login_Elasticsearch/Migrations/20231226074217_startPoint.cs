@@ -14,8 +14,9 @@ namespace Register_Login_Elasticsearch.Migrations
                 name: "Users",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    DatabaseId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    ElasticId = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Surname = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     UserName = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -24,8 +25,13 @@ namespace Register_Login_Elasticsearch.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Users", x => x.Id);
+                    table.PrimaryKey("PK_Users", x => x.DatabaseId);
                 });
+
+            migrationBuilder.InsertData(
+                table: "Users",
+                columns: new[] { "DatabaseId", "ElasticId", "Email", "Name", "Password", "Surname", "UserName" },
+                values: new object[] { 1, "a", "n", "n", "m", "o", "i" });
         }
 
         /// <inheritdoc />

@@ -1,11 +1,14 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Nest;
+using System.ComponentModel.DataAnnotations;
 
 namespace Register_Login_Elasticsearch.Models
 {
     public class Users
     {
-        public int Id { get; set; }
-        [Required(ErrorMessage = "Name is required")]
+        [Key]
+        public int DatabaseId { get; set; }
+        [PropertyName("_id")]
+        public string ElasticId { get; set; } = null!;
         public required string Name { get; set; }
         [Required(ErrorMessage = "Surname is required")]
         public required string Surname { get; set; }
@@ -15,7 +18,6 @@ namespace Register_Login_Elasticsearch.Models
         public required string Password { get; set; }
         [Required(ErrorMessage = "E-mail is required")]
         public required string Email { get; set; }
-
 
     }
 }
