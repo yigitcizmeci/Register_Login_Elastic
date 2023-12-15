@@ -1,4 +1,5 @@
-﻿using System.Collections.Immutable;
+﻿using Register_Login_Elasticsearch.DTOs;
+using System.Collections.Immutable;
 
 namespace Register_Login_Elasticsearch.Repositories.Contracts
 {
@@ -7,9 +8,9 @@ namespace Register_Login_Elasticsearch.Repositories.Contracts
         Task<ImmutableList<T>> GetAllAsync();
         Task<T> GetByIdAsync(int id);
         Task<T> CreateAsync(T Entity);
-        Task<T> LoginAsync(string eMail, string userName, string password);
-        Task<T> UpdateAsync(T Entity);
-        Task<T> DeleteAsync(int id);
+        Task<ResponseDto.LoginResult> LoginAsync(UserLoginDto userLoginDto);
+        Task<bool> UpdateAsync(UsersUpdateDto usersUpdateDto);
+        Task<bool> DeleteAsync(int id);
 
     }
 }
