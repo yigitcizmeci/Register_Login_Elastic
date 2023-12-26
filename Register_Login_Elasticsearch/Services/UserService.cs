@@ -34,7 +34,7 @@ namespace Register_Login_Elasticsearch.Services
         }
 
         public async Task<List<UserDto>> GetAllAsync()
-        {   
+        {
             var allUsers = await _repository.GetAllAsync();
             var response = _mapper.Map<List<UserDto>>(allUsers);
 
@@ -64,11 +64,11 @@ namespace Register_Login_Elasticsearch.Services
 
             if (existUser == null) throw new Exception("Invalid username or password");
             else
-            {
+        {
                 string token = _tokenHandler.CreateToken(existUser);
                 var loginResult = new ResponseDto.LoginResult(existUser, token.ToString(), "Login Successfully");
                 return _mapper.Map<ResponseDto.LoginResult>(loginResult);
-            }
+        }
         }
 
         public async Task<bool> UpdateAsync(UsersUpdateDto updateDto)
