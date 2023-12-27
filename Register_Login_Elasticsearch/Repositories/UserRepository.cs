@@ -5,7 +5,6 @@ using Register_Login_Elasticsearch.DTOs;
 using Register_Login_Elasticsearch.Models;
 using Register_Login_Elasticsearch.Repositories.Contracts;
 using Register_Login_Elasticsearch.Security;
-using Register_Login_Elasticsearch.Services.Contracts;
 using System.Diagnostics;
 
 namespace Register_Login_Elasticsearch.Repositories
@@ -26,30 +25,30 @@ namespace Register_Login_Elasticsearch.Repositories
             _memoryCache = memoryCache;
         }
 
-        public async Task<Users> CreateAsync(Users newUser)
-        {
-            newUser.Password = Hashing.ToSHA256(newUser.Password);
-            var existUser = await _repositoryContext.Users.FirstOrDefaultAsync(q => q.UserName == newUser.UserName || q.Email == newUser.Email);
-            if (existUser != null) throw new Exception("Username or Email is already exist");
+            public async Task<Users> CreateAsync(Users newUser)
+            {
+                newUser.Password = Hashing.ToSHA256(newUser.Password);
+                var existUser = await _repositoryContext.Users.FirstOrDefaultAsync(q => q.UserName == newUser.UserName || q.Email == newUser.Email);
+                if (existUser != null) throw new Exception("Username or Email is already exist");
 
-            var response = await _client.IndexAsync(newUser, x => x.Index(indexName).Id(Guid.NewGuid().ToString()));
-            if (!response.IsValid) throw new InvalidOperationException("failed to add user. (elastic)");
-            newUser.ElasticId = response.Id;
+                var response = await _client.IndexAsync(newUser, x => x.Index(indexName).Id(Guid.NewGuid().ToString()));
+                if (!response.IsValid) throw new InvalidOperationException("failed to add user. (elastic)");
+                newUser.ElasticId = response.Id;
 
-            await _verification_Code.CodeGenerator(newUser);
+                await _verification_Code.CodeGenerator(newUser);
 
-            await _repositoryContext.Users.AddAsync(newUser);
-            await _repositoryContext.SaveChangesAsync();
-            Debug.WriteLine("***** Registered successfully." +
-                "\n Verification code sended *****");
-            return newUser;
+                await _repositoryContext.Users.AddAsync(newUser);
+                await _repositoryContext.SaveChangesAsync();
+                Console.WriteLine("***** Registered successfully." +
+                    "\n Verification code sended *****");
+                return newUser;
 
-        }
+            }
         public async Task<Users?> LoginAsync(UserLoginDto userLoginDto)
         {
             var hashedPassword = Hashing.ToSHA256(userLoginDto.Password);
             var existUser = await _repositoryContext.Users.FirstOrDefaultAsync(
-                q => q.UserName == userLoginDto.UserName || q.Password == hashedPassword);
+                q => q.UserName == userLoginDto.UserName && q.Password == hashedPassword);
             
             var checkCode = _memoryCache.TryGetValue("VerificationCode", out string? VerificationCode);
             if (!checkCode || userLoginDto.Verification_Code != VerificationCode)

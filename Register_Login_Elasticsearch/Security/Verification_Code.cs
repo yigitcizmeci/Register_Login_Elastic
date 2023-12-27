@@ -16,7 +16,7 @@ namespace Register_Login_Elasticsearch.Security
         public async Task<string> CodeGenerator(Users newUser)
         {
             Random random = new Random();
-            var VerificationCode = random.Next(1000, 10000).ToString();
+            var VerificationCode = random.Next(10000, 100000).ToString();
 
             var reciever = newUser.Email;
             var subject = "Verification Code";

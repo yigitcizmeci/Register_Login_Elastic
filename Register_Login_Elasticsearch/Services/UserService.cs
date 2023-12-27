@@ -38,7 +38,6 @@ namespace Register_Login_Elasticsearch.Services
             return response;
         }
 
-
         public async Task<UserDto?> GetByIdAsync(int id)
         {
             var getById = await _repository.GetByIdAsync(id);
@@ -74,6 +73,12 @@ namespace Register_Login_Elasticsearch.Services
 
             return true;
         }
+        public async Task<List<UserDto>> GetAllUsersDbAsync()
+        {
+            var response = await _repository.GetAllDbAsync();
+            var userDto = _mapper.Map<List<UserDto>>(response);
+            return userDto;
+        }
 
         public async Task<bool> DeleteAsync(string id)
         {
@@ -88,12 +93,6 @@ namespace Register_Login_Elasticsearch.Services
         public async Task<bool> DeleteAllAsync()
         {
             return await _repository.DeleteDatabaseAsync();
-        }
-        public async Task<List<UserDto>> GetAllUsersDbAsync()
-        {
-            var response = await _repository.GetAllDbAsync();
-            var userDto = _mapper.Map<List<UserDto>>(response);
-            return userDto;
         }
         
     }
