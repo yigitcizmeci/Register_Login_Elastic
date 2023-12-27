@@ -10,6 +10,7 @@ namespace Register_Login_Elasticsearch.Repositories.Contracts
         Task<T> GetByIdAsyncElastic(string id);
         Task<T> CreateAsync(T Entity);
         Task<T?> LoginAsync(UserLoginDto userLoginDto);
+        Task<List<T>> GetAllDbAsync();
         Task<bool> UpdateAsync(UsersUpdateDto usersUpdateDto);
         Task<bool> DeleteAsync(string id);
         Task<bool> DeleteAllAsync();

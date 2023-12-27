@@ -5,7 +5,6 @@ using Register_Login_Elasticsearch.Models;
 using Register_Login_Elasticsearch.Repositories;
 using Register_Login_Elasticsearch.Security;
 using Register_Login_Elasticsearch.Services.Contracts;
-using System.Collections.Immutable;
 
 namespace Register_Login_Elasticsearch.Services
 {
@@ -14,14 +13,12 @@ namespace Register_Login_Elasticsearch.Services
         private readonly UserRepository _repository;
         private readonly IMapper _mapper;
         private readonly TokenHandler _tokenHandler;
-        private readonly Verification_Code _verificationCode;
 
-        public UserService(UserRepository repository, IMapper mapper, TokenHandler tokenHandler, Verification_Code verification_Code)
+        public UserService(UserRepository repository, IMapper mapper, TokenHandler tokenHandler)
         {
             _repository = repository;
             _mapper = mapper;
             _tokenHandler = tokenHandler;
-            _verificationCode = verification_Code;
         }
 
         public async Task<UserCreateDto> CreateAsync(UserCreateDto userCreateDto)
@@ -63,12 +60,11 @@ namespace Register_Login_Elasticsearch.Services
             var existUser = await _repository.LoginAsync(loginDto);
 
             if (existUser == null) throw new Exception("Invalid username or password");
-            else
-        {
+        
                 string token = _tokenHandler.CreateToken(existUser);
                 var loginResult = new ResponseDto.LoginResult(existUser, token.ToString(), "Login Successfully");
                 return _mapper.Map<ResponseDto.LoginResult>(loginResult);
-        }
+        
         }
 
         public async Task<bool> UpdateAsync(UsersUpdateDto updateDto)
@@ -93,5 +89,12 @@ namespace Register_Login_Elasticsearch.Services
         {
             return await _repository.DeleteDatabaseAsync();
         }
+        public async Task<List<UserDto>> GetAllUsersDbAsync()
+        {
+            var response = await _repository.GetAllDbAsync();
+            var userDto = _mapper.Map<List<UserDto>>(response);
+            return userDto;
+        }
+        
     }
 }

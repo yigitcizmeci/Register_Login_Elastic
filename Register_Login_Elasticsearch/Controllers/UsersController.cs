@@ -21,6 +21,12 @@ namespace Register_Login_Elasticsearch.Controllers
         {
             return Ok(await _userService.GetAllAsync());
         }
+        [HttpGet]
+        [Route("Database_Users")]
+        public async Task<IActionResult> GetAllUsersDb()
+        {
+            return Ok(await _userService.GetAllUsersDbAsync());
+        }
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {

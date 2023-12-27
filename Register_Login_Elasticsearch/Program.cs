@@ -9,6 +9,7 @@ using TokenHandler = Register_Login_Elasticsearch.Security.TokenHandler;
 using Register_Login_Elasticsearch.AutoMapper;
 using Register_Login_Elasticsearch.Services;
 using Register_Login_Elasticsearch.Services.Contracts;
+using Register_Login_Elasticsearch.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,7 +24,9 @@ builder.Services.AddElastic(builder.Configuration);
 builder.Services.AddAutoMapper(typeof(MapperProfile).Assembly);
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<UserRepository>();
+builder.Services.AddScoped<Verification_Code>();
 builder.Services.AddTransient<IEmailSender,EmailSender>();
+builder.Services.AddMemoryCache();
 
 
 builder.Services.AddDbContext<RepositoryContext>(options =>

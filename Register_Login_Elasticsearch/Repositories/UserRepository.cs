@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Nest;
 using Register_Login_Elasticsearch.DTOs;
 using Register_Login_Elasticsearch.Models;
@@ -14,13 +15,15 @@ namespace Register_Login_Elasticsearch.Repositories
         private readonly RepositoryContext _repositoryContext;
         private readonly ElasticClient _client;
         private readonly Verification_Code _verification_Code;
+        private readonly IMemoryCache _memoryCache;
         private const string indexName = "users";
 
-        public UserRepository(RepositoryContext repositoryContext, ElasticClient client, Verification_Code verification_Code)
+        public UserRepository(RepositoryContext repositoryContext, ElasticClient client, Verification_Code verification_Code, IMemoryCache memoryCache)
         {
             _repositoryContext = repositoryContext;
             _client = client;
             _verification_Code = verification_Code;
+            _memoryCache = memoryCache;
         }
 
         public async Task<Users> CreateAsync(Users newUser)
@@ -33,7 +36,7 @@ namespace Register_Login_Elasticsearch.Repositories
             if (!response.IsValid) throw new InvalidOperationException("failed to add user. (elastic)");
             newUser.ElasticId = response.Id;
 
-            await _verification_Code.CodeGenerator();
+            await _verification_Code.CodeGenerator(newUser);
 
             await _repositoryContext.Users.AddAsync(newUser);
             await _repositoryContext.SaveChangesAsync();
@@ -46,8 +49,14 @@ namespace Register_Login_Elasticsearch.Repositories
         {
             var hashedPassword = Hashing.ToSHA256(userLoginDto.Password);
             var existUser = await _repositoryContext.Users.FirstOrDefaultAsync(
-                q => q.UserName == userLoginDto.UserName && q.Password == hashedPassword);
-
+                q => q.UserName == userLoginDto.UserName || q.Password == hashedPassword);
+            
+            var checkCode = _memoryCache.TryGetValue("VerificationCode", out string? VerificationCode);
+            if (!checkCode || userLoginDto.Verification_Code != VerificationCode)
+            {
+                throw new Exception("İnvalid Verification code.");
+            }
+                
             return existUser;
         }
 
@@ -114,6 +123,14 @@ namespace Register_Login_Elasticsearch.Repositories
             }
 
             return false;
+        }
+
+        public Task<List<Users>> GetAllDbAsync()
+        {
+            var allUsers = _repositoryContext.Users.ToListAsync();
+            if (allUsers == null) throw new Exception("Users not found");
+            
+            return allUsers;
         }
     }
 }
