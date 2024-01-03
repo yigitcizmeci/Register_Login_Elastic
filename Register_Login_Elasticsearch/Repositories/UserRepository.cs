@@ -5,7 +5,6 @@ using Register_Login_Elasticsearch.DTOs;
 using Register_Login_Elasticsearch.Models;
 using Register_Login_Elasticsearch.Repositories.Contracts;
 using Register_Login_Elasticsearch.Security;
-using System.Diagnostics;
 
 namespace Register_Login_Elasticsearch.Repositories
 {
@@ -15,34 +14,41 @@ namespace Register_Login_Elasticsearch.Repositories
         private readonly ElasticClient _client;
         private readonly Verification_Code _verification_Code;
         private readonly IMemoryCache _memoryCache;
+        private readonly ILogger<UserRepository> _logger;
         private const string indexName = "users";
 
-        public UserRepository(RepositoryContext repositoryContext, ElasticClient client, Verification_Code verification_Code, IMemoryCache memoryCache)
+        public UserRepository(RepositoryContext repositoryContext, ElasticClient client, Verification_Code verification_Code, IMemoryCache memoryCache,
+            ILogger<UserRepository> logger)
         {
             _repositoryContext = repositoryContext;
             _client = client;
             _verification_Code = verification_Code;
             _memoryCache = memoryCache;
+            _logger = logger;
         }
 
             public async Task<Users> CreateAsync(Users newUser)
             {
+            try
+            {
                 newUser.Password = Hashing.ToSHA256(newUser.Password);
                 var existUser = await _repositoryContext.Users.FirstOrDefaultAsync(q => q.UserName == newUser.UserName || q.Email == newUser.Email);
-                if (existUser != null) throw new Exception("Username or Email is already exist");
+                if (existUser != null) _logger.LogWarning("Username or Email is already exist" + "\n Please check your informations");
 
                 var response = await _client.IndexAsync(newUser, x => x.Index(indexName).Id(Guid.NewGuid().ToString()));
-                if (!response.IsValid) throw new InvalidOperationException("failed to add user. (elastic)");
+                if (!response.IsValid) _logger.LogError("failed to add user. (elastic)" + "\n Maybe there is same user in elastic container!!");
                 newUser.ElasticId = response.Id;
-
                 await _verification_Code.CodeGenerator(newUser);
 
                 await _repositoryContext.Users.AddAsync(newUser);
                 await _repositoryContext.SaveChangesAsync();
-                Console.WriteLine("***** Registered successfully." +
-                    "\n Verification code sended *****");
+                _logger.LogInformation("Succesfully registered");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error occured while registering{ex.Message}", ex);
+            }
                 return newUser;
-
             }
         public async Task<Users?> LoginAsync(UserLoginDto userLoginDto)
         {

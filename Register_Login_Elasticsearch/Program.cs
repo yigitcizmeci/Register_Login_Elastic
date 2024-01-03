@@ -10,6 +10,10 @@ using Register_Login_Elasticsearch.AutoMapper;
 using Register_Login_Elasticsearch.Services;
 using Register_Login_Elasticsearch.Services.Contracts;
 using Register_Login_Elasticsearch.Security;
+using Serilog;
+using Serilog.Exceptions;
+using Serilog.Sinks.Elasticsearch;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,6 +32,8 @@ builder.Services.AddScoped<Verification_Code>();
 builder.Services.AddTransient<IEmailSender,EmailSender>();
 builder.Services.AddMemoryCache();
 
+ConfigureLogs();
+builder.Host.UseSerilog();
 
 builder.Services.AddDbContext<RepositoryContext>(options =>
 options.UseSqlServer(builder.Configuration.GetConnectionString("sqlConnection")));
@@ -71,3 +77,32 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+#region helper
+void ConfigureLogs()
+{
+    var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+
+    var configuration = new ConfigurationBuilder()
+        .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+        .Build();
+
+    Log.Logger = new LoggerConfiguration()
+        .Enrich.FromLogContext()
+        .Enrich.WithExceptionDetails()
+        .WriteTo.Debug()
+        .WriteTo.Console()
+        .WriteTo.Elasticsearch(ConfigurationELS(configuration, env))
+        .CreateLogger();
+}
+
+ElasticsearchSinkOptions ConfigurationELS(IConfiguration configuration, string? env)
+{
+    return new ElasticsearchSinkOptions(new Uri(configuration["Elastic:Uri"]!))
+    {
+        AutoRegisterTemplate = true,
+        IndexFormat = $"users-{env?.ToLower().Replace(".","-")}-{DateTime.UtcNow:yyyy-MM}"
+    };
+}
+
+#endregion
