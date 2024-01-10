@@ -27,41 +27,50 @@ namespace Register_Login_Elasticsearch.Repositories
             _logger = logger;
         }
 
-            public async Task<Users> CreateAsync(Users newUser)
-            {
-            try
-            {
-                newUser.Password = Hashing.ToSHA256(newUser.Password);
-                var existUser = await _repositoryContext.Users.FirstOrDefaultAsync(q => q.UserName == newUser.UserName || q.Email == newUser.Email);
-                if (existUser != null) _logger.LogWarning("Username or Email is already exist" + "\n Please check your informations");
+        public async Task<Users> CreateAsync(Users newUser)
+        {
 
-                var response = await _client.IndexAsync(newUser, x => x.Index(indexName).Id(Guid.NewGuid().ToString()));
-                if (!response.IsValid) _logger.LogError("failed to add user. (elastic)" + "\n Maybe there is same user in elastic container!!");
-                newUser.ElasticId = response.Id;
-                await _verification_Code.CodeGenerator(newUser);
-
-                await _repositoryContext.Users.AddAsync(newUser);
-                await _repositoryContext.SaveChangesAsync();
-                _logger.LogInformation("Succesfully registered");
-            }
-            catch (Exception ex)
+            newUser.Password = Hashing.ToSHA256(newUser.Password);
+            var existUser = await _repositoryContext.Users.FirstOrDefaultAsync(q => q.UserName == newUser.UserName || q.Email == newUser.Email);
+            if (existUser != null)
             {
-                _logger.LogError($"Error occured while registering{ex.Message}", ex);
+                _logger.LogWarning("Username or Email is already exist");
+                throw new Exception("Username or Email is already exist" + "\n Please check your informations");
             }
-                return newUser;
+
+            var response = await _client.IndexAsync(newUser, x => x.Index(indexName).Id(Guid.NewGuid().ToString()));
+            if (!response.IsValid)
+            {
+                _logger.LogError("failed to add user. (elastic)");
+                throw new Exception("failed to add user. (elastic)" + "\nCheck Elastic container ");
             }
+
+            newUser.ElasticId = response.Id;
+            await _verification_Code.CodeGenerator(newUser);
+
+            await _repositoryContext.Users.AddAsync(newUser);
+            await _repositoryContext.SaveChangesAsync();
+            _logger.LogInformation("Succesfully registered");
+
+            return newUser;
+        }
         public async Task<Users?> LoginAsync(UserLoginDto userLoginDto)
         {
             var hashedPassword = Hashing.ToSHA256(userLoginDto.Password);
             var existUser = await _repositoryContext.Users.FirstOrDefaultAsync(
                 q => q.UserName == userLoginDto.UserName && q.Password == hashedPassword);
-            
+            if (existUser == null)
+            {
+                _logger.LogWarning("Wron Password or username");
+                throw new Exception("Invalid Username or Password");
+            }
+
             var checkCode = _memoryCache.TryGetValue("VerificationCode", out string? VerificationCode);
             if (!checkCode || userLoginDto.Verification_Code != VerificationCode)
             {
                 throw new Exception("İnvalid Verification code.");
             }
-                
+
             return existUser;
         }
 
@@ -110,11 +119,19 @@ namespace Register_Login_Elasticsearch.Repositories
 
         public async Task<bool> UpdateAsync(UsersUpdateDto usersUpdateDto)
         {
-            var response = await _client.UpdateAsync<Users, UsersUpdateDto>(usersUpdateDto.Id, x => x.Index(indexName).Doc(usersUpdateDto));
+            var response = await _client.UpdateAsync<Users, UsersUpdateDto>(usersUpdateDto.ElasticId, x => x.Index(indexName).Doc(usersUpdateDto));
+
+            if (!response.IsValid)
+            {
+                _logger.LogError($"Error in Elasticsearch UpdateAsync: {response.ServerError?.ToString()}");
+                _logger.LogError($"Debug Information: {response.DebugInformation}");
+            }
+
             await _repositoryContext.SaveChangesAsync();
 
             return response.IsValid;
         }
+
 
         public async Task<bool> DeleteDatabaseAsync()
         {
@@ -134,7 +151,7 @@ namespace Register_Login_Elasticsearch.Repositories
         {
             var allUsers = _repositoryContext.Users.ToListAsync();
             if (allUsers == null) throw new Exception("Users not found");
-            
+
             return allUsers;
         }
     }

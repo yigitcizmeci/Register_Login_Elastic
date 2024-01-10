@@ -20,7 +20,7 @@ namespace Register_Login_Elasticsearch.Security
 
             var reciever = newUser.Email;
             var subject = "Verification Code";
-            var message = VerificationCode;
+            var message = VerificationCode + "\nUse this code wihile loggin in";
             try
             {
                 await _emailSender.SendEmailAsync(reciever, subject, message);
