@@ -3,7 +3,12 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34309.116
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Register_Login_Elasticsearch", "Register_Login_Elasticsearch\Register_Login_Elasticsearch.csproj", "{52ED6166-7969-4BDD-ABA6-C2CE439B55EE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Register_Login_Elasticsearch", "Register_Login_Elasticsearch\Register_Login_Elasticsearch.csproj", "{52ED6166-7969-4BDD-ABA6-C2CE439B55EE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B3902E98-068F-491B-BD29-D2885F413E9A}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
