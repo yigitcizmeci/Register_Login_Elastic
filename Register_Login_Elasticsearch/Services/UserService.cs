@@ -4,7 +4,9 @@ using Register_Login_Elasticsearch.DTOs;
 using Register_Login_Elasticsearch.Models;
 using Register_Login_Elasticsearch.Repositories;
 using Register_Login_Elasticsearch.Security;
+using Register_Login_Elasticsearch.SeriLog;
 using Register_Login_Elasticsearch.Services.Contracts;
+using Serilog.Events;
 
 namespace Register_Login_Elasticsearch.Services
 {
@@ -94,6 +96,15 @@ namespace Register_Login_Elasticsearch.Services
         {
             return await _repository.DeleteDatabaseAsync();
         }
-        
+
+        //public void UsersLog(string ElasticId, string Message, LogEventLevel logLevel = LogEventLevel.Information)
+        //{
+        //    _repository.LogUserActivity(ElasticId, Message, logLevel);
+        //}
+
+        public List<LogDocument> GetUserLogs(int userId)
+        {
+            return _repository.GetUserLogs(userId);
+        }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Register_Login_Elasticsearch.DTOs;
 using Register_Login_Elasticsearch.Models;
+using Register_Login_Elasticsearch.SeriLog;
 
 namespace Register_Login_Elasticsearch.AutoMapper
 {
