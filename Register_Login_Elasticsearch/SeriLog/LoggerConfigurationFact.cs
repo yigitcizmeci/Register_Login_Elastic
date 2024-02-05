@@ -1,21 +1,12 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using Elasticsearch.Net;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using Nest;
+﻿using System.Collections.ObjectModel;
 using System.Data;
 using Serilog;
 using Serilog.Core;
-using Serilog.Events;
 using Serilog.Sinks.MSSqlServer;
-using Serilog.Sinks.MSSqlServer.Sinks.MSSqlServer.Options;
-using Serilog.Extensions.Logging;
 using Serilog.Exceptions;
 using Serilog.Sinks.Elasticsearch;
 using System.Reflection;
 using SqlColumn = Serilog.Sinks.MSSqlServer.SqlColumn;
-using Register_Login_Elasticsearch.Models;
-
 
 namespace Register_Login_Elasticsearch.SeriLog
 {
@@ -64,7 +55,7 @@ namespace Register_Login_Elasticsearch.SeriLog
                 .ReadFrom.Configuration(conf)
                 .CreateLogger();
 
-                ElasticsearchSinkOptions ConfigureElasticSink(IConfiguration configuration, string? env)
+                ElasticsearchSinkOptions ConfigureElasticSink(IConfiguration configuration, string env)
                 {
                     return new ElasticsearchSinkOptions(new Uri(configuration["Elastic:Uri"]!))
                     {
@@ -75,9 +66,9 @@ namespace Register_Login_Elasticsearch.SeriLog
                     };
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw;
+                throw new Exception("An error occurred while creating logger.", ex);
             }
         }
         private static ColumnOptions CreateCustomColumnOptions()
@@ -89,8 +80,8 @@ namespace Register_Login_Elasticsearch.SeriLog
          new SqlColumn
          {
              ColumnName = "UserId",
-             DataType = SqlDbType.Int,
-             AllowNull = true,
+             DataType = SqlDbType.NVarChar,
+             AllowNull = false,
          }
      }
             };

@@ -1,10 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Nest;
 using Register_Login_Elasticsearch.DTOs;
-using Register_Login_Elasticsearch.Models;
-using Register_Login_Elasticsearch.SeriLog;
 using Register_Login_Elasticsearch.Services;
-using Serilog.Events;
 
 namespace Register_Login_Elasticsearch.Controllers
 {
@@ -27,25 +24,14 @@ namespace Register_Login_Elasticsearch.Controllers
         {
             return Ok(await _userService.GetAllAsync());
         }
-        [HttpGet]
-        [Route("Database_Users")]
-        public async Task<IActionResult> GetAllUsersDb()
+        [HttpGet("{_id}")]
+        public async Task<IActionResult> GetById(string _id)
         {
-            return Ok(await _userService.GetAllUsersDbAsync());
-        }
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
-        {
-            return Ok(await _userService.GetByIdAsync(id));
+            return Ok(await _userService.GetByIdAsync(_id));
         }
 
-        [HttpGet("elasticsearch/{id}")]
-        public async Task<IActionResult> GetByIdElastic(string id)
-        {
-            return Ok(await _userService.GetByIdAsyncElastic(id));
-        }
         [HttpGet("UserLogs/{userid}")]
-        public IActionResult GetUserLogsById(int userid)
+        public IActionResult GetUserLogsById(string userid)
         {
             return Ok(_userService.GetUserLogs(userid));
         }
@@ -75,16 +61,15 @@ namespace Register_Login_Elasticsearch.Controllers
         }
 
         [HttpDelete]
-        [Route("Elastic")]
         public async Task<IActionResult> DeleteAllUser()
-        {
-            return Ok(await _userService.DeleteAllAsyncElastic());
-        }
-        [HttpDelete]
-        public async Task<IActionResult> DeleteAllUserDatabase()
         {
             return Ok(await _userService.DeleteAllAsync());
         }
-
+        [HttpGet]
+        [Route("All_Information")]
+        public async Task<IActionResult> GetAsync()
+        {
+            return Ok(await _userService.GetAsync());
+        }
     }
 }

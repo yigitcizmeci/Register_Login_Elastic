@@ -1,12 +1,10 @@
 ﻿using AutoMapper;
-using Nest;
 using Register_Login_Elasticsearch.DTOs;
 using Register_Login_Elasticsearch.Models;
 using Register_Login_Elasticsearch.Repositories;
 using Register_Login_Elasticsearch.Security;
 using Register_Login_Elasticsearch.SeriLog;
 using Register_Login_Elasticsearch.Services.Contracts;
-using Serilog.Events;
 
 namespace Register_Login_Elasticsearch.Services
 {
@@ -32,7 +30,7 @@ namespace Register_Login_Elasticsearch.Services
             return userDto;
         }
 
-        public async Task<List<UserDto>> GetAllAsync()
+        public async Task<IEnumerable<UserDto>> GetAllAsync()
         {
             var allUsers = await _repository.GetAllAsync();
             var response = _mapper.Map<List<UserDto>>(allUsers);
@@ -40,18 +38,10 @@ namespace Register_Login_Elasticsearch.Services
             return response;
         }
 
-        public async Task<UserDto?> GetByIdAsync(int id)
+        public async Task<UserDto> GetByIdAsync(string _id)
         {
-            var getById = await _repository.GetByIdAsync(id);
+            var getById = await _repository.GetByIdAsync(_id);
             var userDtos = _mapper.Map<UserDto>(getById);
-
-            return userDtos;
-        }
-
-        public async Task<UserDto?> GetByIdAsyncElastic(string id)
-        {
-            var getById = await _repository.GetByIdAsyncElastic(id);
-            var userDtos = _mapper.Map<UserDto?>(getById);
 
             return userDtos;
         }
@@ -68,43 +58,32 @@ namespace Register_Login_Elasticsearch.Services
         
         }
 
-        public async Task<bool> UpdateAsync(UsersUpdateDto updateDto)
+        public async Task<UsersUpdateDto> UpdateAsync(UsersUpdateDto updateDto)
         {
             var isUpdateSuccessful = await _repository.UpdateAsync(updateDto);
-            if (!isUpdateSuccessful) throw new Exception("Error while updating");
+            if (isUpdateSuccessful == null) throw new Exception("Error while updating");
 
-            return true;
-        }
-        public async Task<List<UserDto>> GetAllUsersDbAsync()
-        {
-            var response = await _repository.GetAllDbAsync();
-            var userDto = _mapper.Map<List<UserDto>>(response);
-            return userDto;
+            return _mapper.Map<UsersUpdateDto>(isUpdateSuccessful);
         }
 
         public async Task<bool> DeleteAsync(string id)
         {
-            return await _repository.DeleteAsync(id);
-        }
-
-        public async Task<bool> DeleteAllAsyncElastic()
-        {
-            return await _repository.DeleteAllAsync();
+            return await _repository.DeleteByIdAsync(id);
         }
 
         public async Task<bool> DeleteAllAsync()
         {
-            return await _repository.DeleteDatabaseAsync();
+            return await _repository.DeleteAllAsync();
         }
 
-        //public void UsersLog(string ElasticId, string Message, LogEventLevel logLevel = LogEventLevel.Information)
-        //{
-        //    _repository.LogUserActivity(ElasticId, Message, logLevel);
-        //}
-
-        public List<LogDocument> GetUserLogs(int userId)
+        public List<LogDocument> GetUserLogs(string userId)
         {
             return _repository.GetUserLogs(userId);
+        }
+
+        public async Task<IEnumerable<Users>> GetAsync()
+        {
+            return await _repository.GetAsync();
         }
     }
 }

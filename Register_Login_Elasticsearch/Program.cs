@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Register_Login_Elasticsearch.Extensions;
-using Microsoft.Extensions.Configuration;
 using Register_Login_Elasticsearch.Repositories;
 using System.Text;
 using TokenHandler = Register_Login_Elasticsearch.Security.TokenHandler;
@@ -11,9 +10,6 @@ using Register_Login_Elasticsearch.Services;
 using Register_Login_Elasticsearch.Services.Contracts;
 using Register_Login_Elasticsearch.Security;
 using Serilog;
-using Serilog.Exceptions;
-using Serilog.Sinks.Elasticsearch;
-using System.Reflection;
 using Register_Login_Elasticsearch.SeriLog;
 
 var builder = WebApplication.CreateBuilder(args);

@@ -1,14 +1,14 @@
 ﻿using Nest;
+using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
 
 namespace Register_Login_Elasticsearch.Models
 {
     public class Users
     {
-        [Key]
-        public int DatabaseId { get; set; }
-        [PropertyName("_id")]
-        public string ElasticId { get; set; } = null!;
+        [JsonProperty("_id")]
+        public string Id { get; set; } = null!;
+        [Required(ErrorMessage = "Name is required")]
         public required string Name { get; set; }
         [Required(ErrorMessage = "Surname is required")]
         public required string Surname { get; set; }
